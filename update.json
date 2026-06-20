@@ -1,5 +1,5 @@
 {
-  "version": "1.0.1",
+  "version": "2.0.0",
   "downloadUrl": "https://github.com/你的用户名/你的仓库/releases/latest",
-  "notes": "修复了一些问题，更新页面逻辑。"
+  "notes": "重大更新，必须更新此版本。"
 }
