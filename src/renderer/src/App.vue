@@ -1,7 +1,50 @@
 <script setup lang="ts">
 import Versions from './components/Versions.vue'
+import { onMounted, h } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
-const ipcHandle = (): void => window.electron.ipcRenderer.send('ping')
+// 检查更新的函数
+const checkUpdate = async (): Promise<void> => {
+  try {
+    // 判断 preload 是否正常加载
+    if (!window.updater) {
+      console.warn('updater API 未找到')
+      return
+    }
+
+    const result = await window.updater.checkUpdate()
+
+    if (result.hasUpdate) {
+      ElMessageBox.confirm(
+        h('div', {}, [
+          h('h2', '发现新版本'),
+          h('p', `当前版本：${result.currentVersion}`),
+          h('p', `最新版本：${result.latestVersion}`),
+          h('p', result.notes ?? ''),
+          h('p', '是否前往下载？')
+        ]),
+        '软件更新',
+        {
+          confirmButtonText: '立即更新',
+          cancelButtonText: '取消更新'
+        }
+      ).then(async () => {
+        await window.updater.openUpdateUrl(result.downloadUrl)
+      })
+    } else {
+      ElMessage({
+        message: `当前已是最新版本：${result.currentVersion}`,
+        type: 'info'
+      })
+    }
+  } catch (err) {
+    console.error('检查更新失败：', err)
+  }
+}
+
+onMounted(() => {
+  checkUpdate()
+})
 </script>
 
 <template>
@@ -17,9 +60,6 @@ const ipcHandle = (): void => window.electron.ipcRenderer.send('ping')
   <div class="actions">
     <div class="action">
       <a href="https://electron-vite.org/" target="_blank" rel="noreferrer">Documentation</a>
-    </div>
-    <div class="action">
-      <a target="_blank" rel="noreferrer" @click="ipcHandle">Send IPC</a>
     </div>
   </div>
   <Versions />

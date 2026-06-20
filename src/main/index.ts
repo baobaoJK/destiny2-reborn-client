@@ -3,11 +3,20 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
+// 获取当前应用版本
+const currentVersion = app.getVersion()
+// 更新检查的远程 JSON 地址
+const UPDATE_URL =
+  'https://raw.githubusercontent.com/baobaoJK/destiny2-reborn-client/refs/heads/master/update.json'
+
+// Electron 窗口设置
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    width: 1600,
+    height: 900,
+    minWidth: 1600,
+    minHeight: 900,
     show: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
@@ -49,15 +58,49 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
-
   createWindow()
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
+  })
+
+  // 更新检查相关 IPC 处理
+  ipcMain.handle('check-update', async () => {
+    try {
+      const res = await fetch(`${UPDATE_URL}?t=${Date.now()}`, {
+        cache: 'no-store'
+      })
+
+      if (!res.ok) {
+        throw new Error('Update request failed')
+      }
+
+      const remote = await res.json()
+
+      return {
+        currentVersion,
+        latestVersion: remote.version,
+        hasUpdate: remote.version !== currentVersion,
+        downloadUrl: remote.downloadUrl,
+        notes: remote.notes
+      }
+    } catch (err) {
+      console.error('检查更新失败：', err)
+
+      return {
+        currentVersion,
+        latestVersion: currentVersion,
+        hasUpdate: false,
+        downloadUrl: '',
+        notes: ''
+      }
+    }
+  })
+
+  ipcMain.handle('open-update-url', async (_, url: string) => {
+    await shell.openExternal(url)
   })
 })
 
