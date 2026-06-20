@@ -1,5 +1,8 @@
 {
-  "version": "1.0.1",
-  "downloadUrl": "https://github.com/baobaoJK/destiny2-reborn-client/releases/latest",
-  "notes": "修复了一些问题，优化了启动速度。"
+    "version": "1.0.1",
+    "force": false,
+    "title": "发现新版本",
+    "description": "1. 修复GIF复制问题\n2. 优化图片加载速度\n3. 修复若干BUG",
+    "downloadUrl": "https://github.com/用户名/仓库/releases/download/v1.0.1/MyApp-Setup.exe",
+    "publishTime": "2026-02-21 09:00:00"
 }
