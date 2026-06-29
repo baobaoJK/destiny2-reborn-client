@@ -1,13 +1,7 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, autoUpdater } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-
-// 获取当前应用版本
-const currentVersion = app.getVersion()
-// 更新检查的远程 JSON 地址
-const UPDATE_URL =
-  'https://raw.githubusercontent.com/baobaoJK/destiny2-reborn-client/refs/heads/master/update.json'
 
 // Electron 窗口设置
 function createWindow(): void {
@@ -48,6 +42,9 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+  // 自动更新
+  autoUpdater.checkForUpdates()
+
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
@@ -65,48 +62,6 @@ app.whenReady().then(() => {
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
-
-  // 更新检查相关 IPC 处理
-  ipcMain.handle('check-update', async () => {
-    try {
-      const res = await fetch(`${UPDATE_URL}?t=${Date.now()}`, {
-        cache: 'no-store'
-      })
-
-      if (!res.ok) {
-        throw new Error('Update request failed')
-      }
-
-      const remote = await res.json()
-
-      // 输出日志，方便调试
-      console.log('当前版本:', currentVersion)
-      console.log('远程版本:', remote.version)
-      console.log('是否有更新:', remote.version !== currentVersion)
-
-      return {
-        currentVersion,
-        latestVersion: remote.version,
-        hasUpdate: remote.version !== currentVersion,
-        downloadUrl: remote.downloadUrl,
-        notes: remote.notes
-      }
-    } catch (err) {
-      console.error('检查更新失败：', err)
-
-      return {
-        currentVersion,
-        latestVersion: currentVersion,
-        hasUpdate: false,
-        downloadUrl: '',
-        notes: ''
-      }
-    }
-  })
-
-  ipcMain.handle('open-update-url', async (_, url: string) => {
-    await shell.openExternal(url)
-  })
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -120,3 +75,12 @@ app.on('window-all-closed', () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
+
+autoUpdater.on('update-available', () => {
+  console.log('发现新版本')
+})
+
+autoUpdater.on('update-downloaded', () => {
+  console.log('下载完成')
+  autoUpdater.quitAndInstall()
+})
