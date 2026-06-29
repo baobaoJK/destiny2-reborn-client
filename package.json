@@ -24,7 +24,8 @@
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
     "electron-updater": "^6.3.9",
-    "element-plus": "^2.14.2"
+    "element-plus": "^2.14.2",
+    "vue-i18n": "^11.4.6"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "3.0.0",

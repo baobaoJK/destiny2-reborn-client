@@ -11,7 +11,7 @@ const UPDATE_URL =
 
 // Electron 窗口设置
 function createWindow(): void {
-  // Create the browser window.
+  // 创建浏览器窗口
   const mainWindow = new BrowserWindow({
     width: 1600,
     height: 900,
@@ -78,6 +78,11 @@ app.whenReady().then(() => {
       }
 
       const remote = await res.json()
+
+      // 输出日志，方便调试
+      console.log('当前版本:', currentVersion)
+      console.log('远程版本:', remote.version)
+      console.log('是否有更新:', remote.version !== currentVersion)
 
       return {
         currentVersion,
